@@ -131,7 +131,7 @@ public class Main
        {
             Display.setDisplayMode(new DisplayMode(WIDTH, HEIGHT));
             Display.setTitle("OLOLOLOLOLOLOLOL");
-            Display.setResizable(true);
+            //Display.setResizable(true);
             Display.create();
        }
        catch (LWJGLException e)
@@ -146,30 +146,15 @@ public class Main
         glOrtho(0, WIDTH, HEIGHT, 0, 1, -1);
         glMatrixMode(GL_MODELVIEW);
         glEnable(GL_TEXTURE_2D);
-
-        //TODO: make in another throwable method
-        Texture texture;
-        try {
-            texture = TextureLoader.getTexture("PNG", new FileInputStream(new File("res/test.png")));
-            // Replace PNG with your file extension
-            glBindTexture(GL_TEXTURE_2D, texture.getTextureID());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //TODO: HANDLE IF THERE ANY TEXTURES
+        Textures.bindTextures(); //IMPORTANT!11 ERROR NOT HANDLED!11
 
         //RENDERING
        CreateField();
        while(!Display.isCloseRequested())
        {
             glClear(GL_COLOR_BUFFER_BIT); //To clear a 2D drawing canvas
-            if (Display.wasResized())
-            {
-                WIDTH = Display.getWidth();
-                HEIGHT = Display.getHeight();
-                glViewport(0, 0, WIDTH, HEIGHT);
-            }
+
            //NYA();
            RenderField();
            checkMouseClicks();
