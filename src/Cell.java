@@ -86,28 +86,7 @@ public final class Cell
         }
         else if (state == State.Marked)
         {
-            //glColor3f(1, 0, 0);
-
-            Texture texture;
-            try {
-                texture = TextureLoader.getTexture("PNG", new FileInputStream(new File("res/ADOLF.png")));
-                // Replace PNG with your file extension
-                glBindTexture(GL_TEXTURE_2D, texture.getTextureID());
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            glVertex2f(X, Y);                         glTexCoord2f(0, 0);
-            glVertex2f(X + Size, Y);               glTexCoord2f(1, 1);
-            glVertex2f(X,  Y + Size);              glTexCoord2f(0, 1);
-
-            glVertex2f(X + Size, Y + Size);     glTexCoord2f(1, 1);
-            glVertex2f(X, Y + Size);               glTexCoord2f(0, 0);
-            glVertex2f(X + Size, Y);               glTexCoord2f(1, 0);
-
-            /*
+            glColor3f(1, 0, 0);
             glBegin(GL_TRIANGLES);
                 glVertex2f(X, Y);
                 glVertex2f(X + Size, Y);
@@ -117,7 +96,6 @@ public final class Cell
                 glVertex2f(X, Y + Size);
                 glVertex2f(X + Size, Y);
             glEnd();
-            */
         }
         else if (state == State.Question)
         {
