@@ -7,6 +7,7 @@ public class Main
 {
     public static int WIDTH = 640;
     public static int HEIGHT = 640;
+    public static final String TITLE = "OLOLOLOLOLOLOLOL";
 
     public static int MinesInRow = 10;
     public static int MinesInColumn = 10;
@@ -41,6 +42,7 @@ public class Main
     public static void main(String[] args)
     {
         Game.setResolution(WIDTH, HEIGHT);
+        Game.setTitle(TITLE);
         Game.start(MinesInRow, MinesInColumn);
     }
 }

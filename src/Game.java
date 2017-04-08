@@ -14,6 +14,7 @@ public class Game
     private static  Cell Cells[][];
     private static int Width = 0;
     private static int Height = 0;
+    private static String Title = "";
     private final static int MOUSE_LEFT_BUTTON = 0;
     private final static int MOUSE_RIGHT_BUTTON = 1;
 
@@ -23,12 +24,17 @@ public class Game
         Height = height;
     }
 
+    public static void setTitle(String title)
+    {
+        Title = title;
+    }
+
     public static void start(int minesInColumn, int minesInRow)
     {
         try
         {
             Display.setDisplayMode(new DisplayMode(Width, Height));
-            Display.setTitle("OLOLOLOLOLOLOLOL");
+            Display.setTitle(Title);
             //Display.setResizable(true);
             Display.create();
         }
