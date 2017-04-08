@@ -15,13 +15,20 @@ public class Textures
     public static final int RGB = 3;
     public static final int RGBA = 4;
 
-    public static int[] TexturesData;
+    public static int[] TexturesData = null;
 
     public static void bindTextures()
     {
+        if (TexturesData != null) return;
         TexturesData = new int[Constants.TEXTURES_PATHS.length];
         for (int i = 0; i < Constants.TEXTURES_PATHS.length; i++)
             TexturesData[i] = Textures.loadTexture(Constants.TEXTURES_PATHS[i], Textures.RGBA);
+    }
+
+    public static void releaseTextures()
+    {
+        for (int i = 0; i < Constants.TEXTURES_PATHS.length; i++)
+            glDeleteTextures(TexturesData[i]);
     }
 
     private static BufferedImage loadImage(String location)
@@ -53,7 +60,7 @@ public class Textures
                 buffer.put((byte) ((pixel >> 16) & 0xFF));     // Red component
                 buffer.put((byte) ((pixel >> 8) & 0xFF));      // Green component
                 buffer.put((byte) (pixel & 0xFF));               // Blue component
-                if (BYTES_PER_PIXEL == RGBA) buffer.put((byte) ((pixel >> 24) & 0xFF));    // Alpha component. Only for RGBA
+                buffer.put((byte) ((pixel >> 24) & 0xFF));    // Alpha component. Only for RGBA
             }
         }
 

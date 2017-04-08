@@ -83,7 +83,6 @@ public final class Cell
                     glColor3f(0, 0, 1);     glVertex2f(X, Y + Size);
                     glColor3f(0, 1, 0);     glVertex2f(X + Size, Y);
                 glEnd();
-
             }
         }
         else if (state == State.Marked)
