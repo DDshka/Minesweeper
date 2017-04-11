@@ -3,6 +3,9 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -72,7 +75,7 @@ public class Game
         System.exit(0);
     }
 
-    private static class Field
+    private final static class Field
     {
         public Field(int minesInRow, int minesInColumn, int cellSize)
         {
@@ -99,7 +102,7 @@ public class Game
         }
     }
 
-    private static class Control
+    private final static class Control
     {
         //Mouse clicks handler
         //TODO: Right with left click changes state
@@ -110,26 +113,80 @@ public class Game
                     changeCellState();
         }
 
-        private static Cell getCell(int x, int y)
+        private static Position getCell(int x, int y)
         {
+            /* IN SHALOM, I mean IN FOREACH
             //Foreach instruction in Java are made in that way.
             //Very weird, but who cares?
             for (Cell[] row : Cells)
                 for (Cell cell : row)
                     if (cell.isInCell(x, y))
                         return cell;
+            */
+
+            for (int i = 0; i < Cells.length; i++)
+                for (int j = 0; j < Cells[i].length; j++)
+                    if (Cells[i][j].isInCell(x, y))
+                        return new Position(i, j);
 
             return null;
+        }
+
+
+        private static List getAdjoiningCells(Position pos)
+        {
+            List<Cell> cellList = new ArrayList<Cell>();
+            Position[] checkedPositions =
+            {
+                new Position(pos.X + 1, pos.Y),
+                new Position(pos.X + 1, pos.Y + 1),
+                new Position(pos.X + 1, pos.Y - 1),
+                new Position(pos.X - 1, pos.Y),
+                new Position(pos.X - 1, pos.Y + 1),
+                new Position(pos.X - 1, pos.Y - 1),
+                new Position(pos.X, pos.Y + 1),
+                new Position(pos.X, pos.Y - 1),
+            };
+
+            //BEST COSTYL EVER - I WILL BE BURNED IN HELLS FIRE IN SOME OBVIOUS WAY
+            for (int i = 0; i < checkedPositions.length; i++)
+            {
+                try
+                {
+                    int x = checkedPositions[i].X;
+                    int y = checkedPositions[i].Y;
+                    cellList.add(Cells[x][y]);
+                }
+                catch (IndexOutOfBoundsException e) {
+                    System.out.println("LOL");
+                }
+            }
+
+            return cellList;
         }
 
         private static void changeCellState()
         {
             int x = Mouse.getX();
             int y = Mouse.getY();
-            Cell cell = getCell(x, Height - y); //WTF WITH Y? Features of LWJGL
 
-            if (cell.getState() == State.Opened)
-                return;
+            Position pos = getCell(x, Height - y); //WTF WITH Y? Features of LWJGL
+            Cell cell = Cells[pos.X][pos.Y];
+
+            List<Cell> adjusting = getAdjoiningCells(pos);
+
+            //BASE FOR RIGHT AND LEFT MOUSE BUTTON CLICKS
+            if(Mouse.isButtonDown(MOUSE_RIGHT_BUTTON))
+                if (cell.getState() == State.Opened)
+                {
+                    System.out.println("Right button clicked");
+                    if (Mouse.getEventButton() == MOUSE_LEFT_BUTTON)
+                    {
+                        System.out.println("Left button clicked after right");
+                        for (Cell _cell : adjusting)
+                            _cell.setState(State.Marked);
+                    }
+                }
 
             if (Mouse.getEventButton() == MOUSE_LEFT_BUTTON)
                 cell.setState(State.Opened);
@@ -146,6 +203,17 @@ public class Game
                         cell.setState(State.Closed);
                         break;
                 }
+        }
+
+        private final static class Position
+        {
+            public int X;
+            public int Y;
+            public Position(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
         }
     }
 }
