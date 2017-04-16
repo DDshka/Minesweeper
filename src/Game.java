@@ -5,6 +5,7 @@ import org.lwjgl.opengl.DisplayMode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -14,10 +15,19 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Game
 {
-    private static  Cell Cells[][];
+    //game core
+    private static Cell Cells[][];
+
+    //window swttings
     private static int Width = 0;
     private static int Height = 0;
     private static String Title = "";
+
+    //game vars
+    private static boolean GameIsRunning = true;
+    private static int Mines = 20;
+
+    //game constants (should be moved to constants in nearest future)
     private final static int MOUSE_LEFT_BUTTON = 0;
     private final static int MOUSE_RIGHT_BUTTON = 1;
 
@@ -57,14 +67,19 @@ public class Game
         Textures.bindTextures(); //IMPORTANT!11 ERROR NOT HANDLED!11
 
         //RENDERING
-        Field field = new Field(minesInColumn, minesInRow, 64);
-        while(!Display.isCloseRequested())
+        Field field = new Field(minesInColumn, minesInRow, 64, Mines);
+        while(!Display.isCloseRequested() && GameIsRunning)
         {
             glClear(GL_COLOR_BUFFER_BIT); //To clear a 2D drawing canvas
 
             //NYA();
             field.Render();
             Control.checkMouseClicks();
+            if (Mines == 0)
+            {
+                GameIsRunning = false;
+                System.out.println("YOU ARE WINNER");
+            }
 
             Display.update();
             Display.sync(60);
@@ -77,10 +92,11 @@ public class Game
 
     private final static class Field
     {
-        public Field(int minesInRow, int minesInColumn, int cellSize)
+        public Field(int minesInRow, int minesInColumn, int cellSize, int minesCount)
         {
             int row = 0;
             int cell = 0;
+            int minesTotal = 0;
             Cells = new Cell[minesInRow][minesInColumn];
             for (int i = 0; i < minesInRow; i++)
             {
@@ -92,6 +108,7 @@ public class Game
                 cell = 0;
                 row += cellSize;
             }
+            generateMines(minesCount);
         }
 
         public void Render()
@@ -100,12 +117,32 @@ public class Game
                 for (Cell cell : row)
                     cell.draw();
         }
+
+        private void generateMines(int minesCount)
+        {
+            System.out.println("GENERATING " + minesCount + " BOMBS");
+            int minesTotal = 0;
+            while (minesTotal < minesCount)
+                for (Cell[] row : Cells)
+                    for (Cell cell : row)
+                    {
+                        Random rnd = new Random();
+                        int rand = rnd.nextInt(100);
+                        //Mine spawns with 10% chance; IMPORTANT!11
+                        if (rand <= 10 && !cell.isMine() && minesTotal < minesCount)
+                        {
+                            cell.setMine();
+                            minesTotal++;
+                            System.out.println("BOMB PLANTED");
+                        }
+                    }
+
+        }
     }
 
     private final static class Control
     {
         //Mouse clicks handler
-        //TODO: Right with left click changes state
         public static void checkMouseClicks()
         {
             while(Mouse.next())
@@ -115,15 +152,6 @@ public class Game
 
         private static Position getCell(int x, int y)
         {
-            /* IN SHALOM, I mean IN FOREACH
-            //Foreach instruction in Java are made in that way.
-            //Very weird, but who cares?
-            for (Cell[] row : Cells)
-                for (Cell cell : row)
-                    if (cell.isInCell(x, y))
-                        return cell;
-            */
-
             for (int i = 0; i < Cells.length; i++)
                 for (int j = 0; j < Cells[i].length; j++)
                     if (Cells[i][j].isInCell(x, y))
@@ -132,10 +160,9 @@ public class Game
             return null;
         }
 
-
-        private static List getAdjoiningCells(Position pos)
+        private static List<Position> getAdjoiningCells(Position pos)
         {
-            List<Cell> cellList = new ArrayList<Cell>();
+            List<Position> cellList = new ArrayList<>();
             Position[] checkedPositions =
             {
                 new Position(pos.X + 1, pos.Y),
@@ -155,7 +182,8 @@ public class Game
                 {
                     int x = checkedPositions[i].X;
                     int y = checkedPositions[i].Y;
-                    cellList.add(Cells[x][y]);
+                    Cell cell = Cells[x][y];
+                    cellList.add(checkedPositions[i]);
                 }
                 catch (IndexOutOfBoundsException e) {
                     System.out.println("LOL");
@@ -165,44 +193,92 @@ public class Game
             return cellList;
         }
 
+        private static void checkSingleClick(Position pos)
+        {
+            Cell cell = Cells[pos.X][pos.Y];
+            if (Mouse.getEventButton() == MOUSE_LEFT_BUTTON)
+            {
+                openCell(pos);
+            }
+            else if (Mouse.getEventButton() == MOUSE_RIGHT_BUTTON)
+                switch (cell.getState())
+                {
+                    case Closed:
+                        cell.setState(State.Marked);
+                        if (cell.isMine()) Mines--;
+                        break;
+                    case Marked:
+                        cell.setState(State.Question);
+                        if (cell.isMine()) Mines++;
+                        break;
+                    case Question:
+                        cell.setState(State.Closed);
+                        break;
+                }
+        }
+
+        private static void checkRightAndLeft(Position pos)
+        {
+            //BASE FOR RIGHT AND LEFT MOUSE BUTTON CLICKS
+            Cell cell = Cells[pos.X][pos.Y];
+            if(Mouse.isButtonDown(MOUSE_RIGHT_BUTTON) && Mouse.getEventButton() == MOUSE_LEFT_BUTTON)
+                if (cell.getState() == State.Opened)
+                {
+                    List<Position> adjusting = getAdjoiningCells(pos);
+                    int countMarked = 0;
+                    for (Position adjPosition : adjusting)
+                    {
+                        Cell adjCell = Cells[adjPosition.X][adjPosition.Y];
+                        if (adjCell.getState() == State.Marked)
+                            countMarked++;
+                    }
+
+                    if (countMarked != cell.getMinesAroundCount()) return;
+
+                    for (Position adjPosition : adjusting)
+                    {
+                        Cell adjCell = Cells[adjPosition.X][adjPosition.Y];
+                        if (adjCell.getState() != State.Opened && adjCell.getState() != State.Marked)
+                            openCell(adjPosition);
+                    }
+                }
+        }
+
+        private static void setMinesAround(Position pos)
+        {
+            int count = 0;
+            List<Position> adjusting = getAdjoiningCells(pos);
+            for (Position adjPosition : adjusting)
+            {
+                Cell adjCell = Cells[adjPosition.X][adjPosition.Y];
+                if (adjCell.isMine())
+                    count++;
+            }
+            Cell cell = Cells[pos.X][pos.Y];
+            cell.setMinesAroundCount(count);
+        }
+
+        private static void openCell(Position pos)
+        {
+            Cell cell = Cells[pos.X][pos.Y];
+            cell.setState(State.Opened);
+            if (cell.isMine())
+            {
+                GameIsRunning = false;
+                System.out.println("MINE PRESSED");
+            }
+            setMinesAround(pos);
+        }
+
         private static void changeCellState()
         {
             int x = Mouse.getX();
             int y = Mouse.getY();
 
             Position pos = getCell(x, Height - y); //WTF WITH Y? Features of LWJGL
-            Cell cell = Cells[pos.X][pos.Y];
 
-            List<Cell> adjusting = getAdjoiningCells(pos);
-
-            //BASE FOR RIGHT AND LEFT MOUSE BUTTON CLICKS
-            if(Mouse.isButtonDown(MOUSE_RIGHT_BUTTON))
-                if (cell.getState() == State.Opened)
-                {
-                    System.out.println("Right button clicked");
-                    if (Mouse.getEventButton() == MOUSE_LEFT_BUTTON)
-                    {
-                        System.out.println("Left button clicked after right");
-                        for (Cell _cell : adjusting)
-                            _cell.setState(State.Marked);
-                    }
-                }
-
-            if (Mouse.getEventButton() == MOUSE_LEFT_BUTTON)
-                cell.setState(State.Opened);
-            else if (Mouse.getEventButton() == MOUSE_RIGHT_BUTTON)
-                switch (cell.getState())
-                {
-                    case Closed:
-                        cell.setState(State.Marked);
-                        break;
-                    case Marked:
-                        cell.setState(State.Question);
-                        break;
-                    case Question:
-                        cell.setState(State.Closed);
-                        break;
-                }
+            checkSingleClick(pos);
+            checkRightAndLeft(pos);
         }
 
         private final static class Position

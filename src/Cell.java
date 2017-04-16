@@ -8,6 +8,7 @@ public final class Cell
     private float X;
     private float Y;
     private float Size = 0;
+    private int minesAround = 0;
     private boolean isDrawn = false;
     private boolean isMine = false;
     private State state = State.Closed;
@@ -34,6 +35,10 @@ public final class Cell
         return this.isMine;
     }
 
+    public void setMinesAroundCount(int number) { minesAround = number; }
+
+    public int getMinesAroundCount() { return minesAround; }
+
     public void setState(State state)
     {
         this.state = state;
@@ -49,10 +54,10 @@ public final class Cell
      */
     public boolean isInCell(int x, int y)
     {
-        if (x <= X + Size &&
-                y <= Y + Size &&
-                x >= X &&
-                y >= Y)
+        if (x <= X + Size
+            && y <= Y + Size
+            && x >= X
+            && y >= Y)
         {
             return true;
         }
@@ -70,19 +75,39 @@ public final class Cell
         {
             if (isMine)
             {
-
+                drawTexture(Constants.MINE);
             }
             else
             {
-                glBegin(GL_TRIANGLES);
-                    glColor3f(1, 0, 0);     glVertex2f(X, Y);
-                    glColor3f(0, 1, 0);     glVertex2f(X + Size, Y);
-                    glColor3f(0, 0, 1);     glVertex2f(X,  Y + Size);
-
-                    glColor3f(1, 0, 0);     glVertex2f(X + Size, Y + Size);
-                    glColor3f(0, 0, 1);     glVertex2f(X, Y + Size);
-                    glColor3f(0, 1, 0);     glVertex2f(X + Size, Y);
-                glEnd();
+                switch (minesAround)
+                {
+                    case 0:
+                        drawTexture(Constants.FREE);
+                        break;
+                    case 1:
+                        drawTexture(Constants.ONE);
+                        break;
+                    case 2:
+                        drawTexture(Constants.TWO);
+                        break;
+                    case 3:
+                        drawTexture(Constants.THREE);
+                        break;
+                    case 4:
+                        drawTexture(Constants.FOUR);
+                        break;
+                    case 5:
+                        drawTexture(Constants.FIVE);
+                        break;
+                    case 6:
+                        drawTexture(Constants.SIX);
+                        break;
+                    case 7:
+                        drawTexture(Constants.SEVEN);
+                        break;
+                    case 8:
+                        drawTexture(Constants.EIGHT);
+                }
             }
         }
         else if (state == State.Marked)

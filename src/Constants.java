@@ -18,7 +18,8 @@ public abstract class Constants
         TEXTURES_FOLDER + "/eight.png",
         TEXTURES_FOLDER + "/flag.png",
         TEXTURES_FOLDER + "/question.png",
-        TEXTURES_FOLDER + "/free.png"
+        TEXTURES_FOLDER + "/free.png",
+        TEXTURES_FOLDER + "/mine.png"
     };
 
     //THIS NUMBERS ARE TOTALY DEPENDED ON ORDER OF TEXTURE PATH ABOVE!!11
@@ -35,4 +36,5 @@ public abstract class Constants
     public static final int FLAG = 9;
     public static final int QUESTION = 10;
     public static final int FREE = 11;
+    public static final int MINE = 12;
 }
