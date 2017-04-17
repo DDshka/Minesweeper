@@ -18,21 +18,23 @@ public abstract class Constants
         TEXTURES_FOLDER + "/eight.png",
         TEXTURES_FOLDER + "/flag.png",
         TEXTURES_FOLDER + "/question.png",
-        TEXTURES_FOLDER + "/free.png"
+        TEXTURES_FOLDER + "/free.png",
+        TEXTURES_FOLDER + "/mine.png"
     };
 
     //THIS NUMBERS ARE TOTALY DEPENDED ON ORDER OF TEXTURE PATH ABOVE!!11
     //bad or not - I don`t know. May be some day I will reconsider it.
-    public static final int CELL = 0;
-    public static final int ONE = 1;
-    public static final int TWO = 2;
-    public static final int THREE = 3;
-    public static final int FOUR = 4;
-    public static final int FIVE = 5;
-    public static final int SIX = 6;
-    public static final int SEVEN = 7;
-    public static final int EIGHT = 8;
-    public static final int FLAG = 9;
-    public static final int QUESTION = 10;
-    public static final int FREE = 11;
+    public static final byte CELL = 0;
+    public static final byte ONE = 1;
+    public static final byte TWO = 2;
+    public static final byte THREE = 3;
+    public static final byte FOUR = 4;
+    public static final byte FIVE = 5;
+    public static final byte SIX = 6;
+    public static final byte SEVEN = 7;
+    public static final byte EIGHT = 8;
+    public static final byte FLAG = 9;
+    public static final byte QUESTION = 10;
+    public static final byte FREE = 11;
+    public static final byte MINE = 12;
 }

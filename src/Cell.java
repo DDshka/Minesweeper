@@ -8,7 +8,8 @@ public final class Cell
     private float X;
     private float Y;
     private float Size = 0;
-    private boolean isDrawn = false;
+    private byte minesAround = 0;
+    private byte _state = 0;
     private boolean isMine = false;
     private State state = State.Closed;
 
@@ -34,12 +35,34 @@ public final class Cell
         return this.isMine;
     }
 
+    public int getMinesAroundCount() { return minesAround; }
+
+    public void setMinesAroundCount(byte number) { minesAround = number; }
+
+    public State getState() { return this.state; }
+
     public void setState(State state)
     {
         this.state = state;
+        switch (this.state)
+        {
+            case Opened:
+                if (!isMine())
+                    _state = (minesAround > 0) ? minesAround : Constants.FREE;
+                else
+                    _state = Constants.MINE;
+                break;
+            case Closed:
+                _state = Constants.CELL;
+                break;
+            case Question:
+                _state = Constants.QUESTION;
+                break;
+            case Marked:
+                _state = Constants.FLAG;
+                break;
+        }
     }
-
-    public State getState() { return this.state; }
 
     /**Checks if the given point is in the cell
      * @param x X-coordinate
@@ -49,52 +72,17 @@ public final class Cell
      */
     public boolean isInCell(int x, int y)
     {
-        if (x <= X + Size &&
-                y <= Y + Size &&
-                x >= X &&
-                y >= Y)
-        {
-            return true;
-        }
-        return false;
+        return x <= X + Size
+            && y <= Y + Size
+            && x >= X
+            && y >= Y;
     }
 
     //TODO: make render via array of vertexes
     public void draw()
     {
-        if (state == State.Closed)
-        {
-            drawTexture(Constants.CELL);
-        }
-        else if (state == State.Opened)
-        {
-            if (isMine)
-            {
-
-            }
-            else
-            {
-                glBegin(GL_TRIANGLES);
-                    glColor3f(1, 0, 0);     glVertex2f(X, Y);
-                    glColor3f(0, 1, 0);     glVertex2f(X + Size, Y);
-                    glColor3f(0, 0, 1);     glVertex2f(X,  Y + Size);
-
-                    glColor3f(1, 0, 0);     glVertex2f(X + Size, Y + Size);
-                    glColor3f(0, 0, 1);     glVertex2f(X, Y + Size);
-                    glColor3f(0, 1, 0);     glVertex2f(X + Size, Y);
-                glEnd();
-            }
-        }
-        else if (state == State.Marked)
-        {
-            drawTexture(Constants.FLAG);
-        }
-        else if (state == State.Question)
-        {
-            drawTexture(Constants.QUESTION);
-        }
+        drawTexture(_state);
         glColor3f(1,1,1); //IMPORTANT!!!11 DO NOT ERASE THIS CODE. On this shit depends background color. IDK why.
-        isDrawn = true;
     }
     
     private void drawTexture(int textureId)
