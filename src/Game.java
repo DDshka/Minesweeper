@@ -1,3 +1,4 @@
+import javafx.geometry.Pos;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -25,7 +26,9 @@ public class Game
 
     //game vars
     private static boolean GameIsRunning = true;
-    private static int Mines = 20;
+    private static int Mines = 3;
+    private static int OpenedCells = 0;
+    private static int FreeCells = 0;
 
     //game constants (should be moved to constants in nearest future)
     private final static int MOUSE_LEFT_BUTTON = 0;
@@ -75,7 +78,8 @@ public class Game
             //NYA();
             field.Render();
             Control.checkMouseClicks();
-            if (Mines == 0)
+
+            if (Mines == 0 && OpenedCells == FreeCells)
             {
                 GameIsRunning = false;
                 System.out.println("YOU ARE WINNER");
@@ -109,6 +113,7 @@ public class Game
                 row += cellSize;
             }
             generateMines(minesCount);
+            FreeCells = minesInRow * minesInColumn - Mines;
         }
 
         public void Render()
@@ -138,7 +143,6 @@ public class Game
                     }
 
             for (int i = 0; i < Cells.length; i++)
-            {
                 for (int j = 0; j < Cells[i].length; j++)
                 {
                     List<Position> adjCells = Control.getAdjoiningCells(new Position(i, j));
@@ -151,7 +155,6 @@ public class Game
                     }
                     Cells[i][j].setMinesAroundCount(count);
                 }
-            }
         }
     }
 
@@ -201,7 +204,7 @@ public class Game
                     cellList.add(checkedPositions[i]);
                 }
                 catch (IndexOutOfBoundsException e) {
-                    System.out.println("LOL");
+                    //System.out.println("LOL");
                 }
             }
 
@@ -250,16 +253,17 @@ public class Game
 
                     if (countMarked != cell.getMinesAroundCount()) return;
 
-                    openBlock(adjusting);
+                    openBlock(pos);
                 }
         }
 
-        private static void openBlock(List<Position> adjusting)
+        private static void openBlock(Position centerPos)
         {
+            List<Position> adjusting = getAdjoiningCells(centerPos);
             for (Position adjPosition : adjusting)
             {
                 Cell adjCell = Cells[adjPosition.X][adjPosition.Y];
-                if (adjCell.getState() != State.Opened && adjCell.getState() != State.Marked)
+                if (adjCell.getState() != State.Marked)
                     openCell(adjPosition);
             }
         }
@@ -267,7 +271,11 @@ public class Game
         private static void openCell(Position pos)
         {
             Cell cell = Cells[pos.X][pos.Y];
+            if (cell.getState() == State.Opened) return;
+
             cell.setState(State.Opened);
+            OpenedCells++;
+            System.out.println(pos.X + " " + pos.Y + " Cell opened");
             if (cell.isMine())
             {
                 GameIsRunning = false;
@@ -275,12 +283,13 @@ public class Game
             }
             else if (cell.getMinesAroundCount() == 0)
             {
+                openBlock(pos);
                 List<Position> adjCells = getAdjoiningCells(pos);
                 for (Position adjPos : adjCells)
                 {
                     Cell adjCell = Cells[adjPos.X][adjPos.Y];
                     if (adjCell.getMinesAroundCount() == 0)
-                        openBlock(adjCells);
+                        openBlock(adjPos);
                 }
             }
         }
